@@ -1,4 +1,4 @@
 [center][color=red][size=16pt][b]FancyBox 4 SMF[/b][/size][/color]
 [color=blue][b][size=10pt]By Bugo[/size][/b][/color]
 
-[color=green]РСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ СЃРѕРѕР±С‰РµРЅРёСЏС… Р»С‘РіРєРѕР№ Рё РѕС‡РµРЅСЊ РєСЂР°СЃРёРІРѕР№ jQuery-Р±РёР±Р»РёРѕС‚РµРєРё [url=https://fancyapps.com/fancybox/3/]fancyBox[/url].[/color][/center][hr]РџР»Р°РіРёРЅ fancyBox Рё РґР°РЅРЅР°СЏ РјРѕРґРёС„РёРєР°С†РёСЏ РґРѕСЃС‚СѓРїРЅС‹ РїРѕ Р»РёС†РµРЅР·РёРё [url=https://opensource.org/licenses/gpl-3.0.html]GPLv3[/url]
+[color=green]Использования для просмотра изображений в сообщениях лёгкой и очень красивой jQuery-библиотеки [url=https://fancyapps.com/fancybox/3/]fancyBox[/url].[/color][/center][hr]Плагин fancyBox и данная модификация доступны по лицензии [url=https://opensource.org/licenses/gpl-3.0.html]GPLv3[/url]

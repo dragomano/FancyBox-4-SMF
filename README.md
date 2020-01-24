@@ -1,10 +1,10 @@
 # FancyBox-4-SMF
-![SMF 2.1](https://img.shields.io/badge/SMF-2.1-blue.svg?style=flat&color=ed6033)
+![SMF 2.0](https://img.shields.io/badge/SMF-2.0-75879b.svg?style=flat)
 ![License](https://img.shields.io/github/license/dragomano/fancybox-4-smf)
 
 * **Author:** Bugo [dragomano.ru](https://dragomano.ru/mods/fancybox-4-smf)
 * **License:** [GPL-3.0](https://github.com/dragomano/FancyBox-4-SMF/blob/master/LICENSE)
-* **Compatible with:** SMF 2.1 RC2+
+* **Compatible with:** SMF 2.0.*
 * **Tested on:** PHP 7.3.13
 * **Hooks only:** Yes
 * **Languages:** English, Russian
