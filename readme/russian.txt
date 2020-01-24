@@ -1,0 +1,4 @@
+[center][color=red][size=16pt][b]FancyBox 4 SMF[/b][/size][/color]
+[color=blue][b][size=10pt]By Bugo[/size][/b][/color]
+
+[color=green]Использование для просмотра изображений в сообщениях лёгкой и очень красивой jQuery-библиотеки [url=https://fancyapps.com/fancybox/3/]fancyBox[/url].[/color][/center][hr]Плагин fancyBox и данная модификация доступны по лицензии [url=https://opensource.org/licenses/gpl-3.0.html]GPLv3[/url]
