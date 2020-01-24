@@ -1,7 +1,4 @@
 # FancyBox-4-SMF
-Просмотр изображений в сообщениях, с эффектами анимации https://dragomano.ru/mods/fancybox-4-smf
-
-# FancyBox-4-SMF
 ![SMF 2.1](https://img.shields.io/badge/SMF-2.1-blue.svg?style=flat&color=ed6033)
 ![License](https://img.shields.io/github/license/dragomano/fancybox-4-smf)
 
