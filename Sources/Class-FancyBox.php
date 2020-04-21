@@ -9,7 +9,7 @@
  * @copyright 2012-2020 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 0.7
+ * @version 0.7.1
  */
 
 if (!defined('SMF'))
@@ -141,12 +141,10 @@ class FancyBox
 
 		foreach ($codes as &$code) {
 			if ($code['tag'] == 'img') {
-				if ($code['content'] == '<img src="$1" alt="" class="bbc_img" />') {
-					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="" class="bbc_img" /></a>';
-				}
-
-				if ($code['content'] == '<img src="$1" alt="{alt}"{width}{height} class="bbc_img resized" />') {
-					$code['content'] = '<a href="$1" class="fancybox" title="{alt}" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="{alt}"{width}{height} /></a>';
+				if (!empty($code['parameters'])) {
+					$code['content'] = '<a href="$1" class="fancybox" title="{alt}" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="{alt}"{width}{height}></a>';
+				} else {
+					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="" class="bbc_img"></a>';
 				}
 			}
 		}
