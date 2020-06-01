@@ -9,7 +9,7 @@
  * @copyright 2012-2020 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 0.7
+ * @version 0.7.1
  */
 
 if (!defined('SMF'))
@@ -53,7 +53,7 @@ class FancyBox
 		<script type="text/javascript" src="' . $settings['default_theme_url'] . '/scripts/jquery.fancybox.min.js"></script>
 		<script type="text/javascript"><!-- // --><![CDATA[
 			jQuery(document).ready(function($) {
-				$("a[id^=link_]").addClass("fancybox").removeAttr("onclick").attr("data-fancybox", "gallery");
+				$("a[id^=link_]").addClass("fancybox").removeAttr("onclick").attr("data-fancybox", "gallery");' . (!empty($modSettings['fancybox_prepare']) ? '
 				$("a.bbc_link").each(function() {
 					var img_link = $(this);
 					if (img_link.text() == "") {
@@ -65,7 +65,7 @@ class FancyBox
 							.attr("target", "_blank");
 						img_link.remove();
 					}
-				});
+				});' : '') . '
 				$("div[id*=_footer]").each(function(){
 					var id = $(this).attr("id");
 					$("#" + id + " a[data-fancybox=gallery]").attr("data-fancybox", "gallery_" + id);
@@ -160,12 +160,10 @@ class FancyBox
 
 		foreach ($codes as &$code) {
 			if ($code['tag'] == 'img') {
-				if ($code['content'] == '<img src="$1" alt="" class="bbc_img" />') {
-					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="" class="bbc_img" /></a>';
-				}
-
-				if ($code['content'] == '<img src="$1" alt="{alt}"{width}{height} class="bbc_img resized" />') {
+				if (!empty($code['parameters'])) {
 					$code['content'] = '<a href="$1" class="fancybox" title="{alt}" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="{alt}"{width}{height} /></a>';
+				} else {
+					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="" class="bbc_img" /></a>';
 				}
 			}
 		}
