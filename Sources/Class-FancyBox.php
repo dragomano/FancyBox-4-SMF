@@ -6,10 +6,10 @@
  * @package FancyBox 4 SMF
  * @link https://custom.simplemachines.org/mods/index.php?mod=3303
  * @author Bugo https://dragomano.ru/mods/fancybox-4-smf
- * @copyright 2012-2020 Bugo
+ * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 0.7.2
+ * @version 0.7.3
  */
 
 if (!defined('SMF'))
@@ -58,7 +58,7 @@ class FancyBox
 			});' . (!empty($modSettings['fancybox_prepare']) ? '
 			$("a.bbc_link").each(function() {
 				let img_link = $(this);
-				if (img_link.text() == "") {
+				if (!img_link.text()) {
 					img_link
 						.next()
 						.attr("class", "bbc_link")
@@ -145,10 +145,10 @@ class FancyBox
 
 		foreach ($codes as &$code) {
 			if ($code['tag'] == 'img') {
-				if (isset($code['parameters'])) {
-					$code['content'] = '<a href="$1" class="fancybox" title="{title}" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="{alt}"{width}{height}></a>';
+				if (!empty($code['parameters']['width'])) {
+					$code['content'] = '<a href="$1" class="fancybox" title="{title}" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="{alt}"{width}{height} loading="lazy"></a>';
 				} else {
-					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img"></a>';
+					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img" loading="lazy"></a>';
 				}
 			}
 		}

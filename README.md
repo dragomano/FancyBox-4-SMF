@@ -4,8 +4,8 @@
 
 * **Author:** Bugo [dragomano.ru](https://dragomano.ru/mods/fancybox-4-smf)
 * **License:** [GPL-3.0](https://github.com/dragomano/FancyBox-4-SMF/blob/master/LICENSE)
-* **Compatible with:** SMF 2.1 RC2+
-* **Tested on:** PHP 7.3.18 / 7.4.6
+* **Compatible with:** SMF 2.1 RC4+
+* **Tested on:** PHP 7.4.21
 * **Hooks only:** Yes
 * **Languages:** English, Russian
 
