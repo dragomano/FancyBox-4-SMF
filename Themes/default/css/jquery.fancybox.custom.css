@@ -16,3 +16,7 @@
 		bottom: 95px;
 	}
 }
+
+.fancybox-thumbs__list {
+	width: auto !important;
+}
