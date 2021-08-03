@@ -9,7 +9,7 @@
  * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 0.7.3
+ * @version 0.8
  */
 
 if (!defined('SMF'))
@@ -26,6 +26,7 @@ class FancyBox
 	{
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme', false, __FILE__);
 		add_integration_function('integrate_bbc_codes', __CLASS__ . '::bbcCodes', false, __FILE__);
+		add_integration_function('integrate_attach_bbc_validate', __CLASS__ . '::attachBbcValidate', false, __FILE__);
 		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas', false, __FILE__);
 		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch', false, __FILE__);
 		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications', false, __FILE__);
@@ -154,6 +155,40 @@ class FancyBox
 		}
 
 		unset($code);
+	}
+
+	/**
+	 * Меняем обработку ББ-кода [attach] для изображений
+	 *
+	 * @param string $returnContext
+	 * @param array $currentAttachment
+	 * @param array $tag
+	 * @param string $data
+	 * @param array $disabled
+	 * @param array $params
+	 * @return void
+	 */
+	public static function attachBbcValidate(&$returnContext, $currentAttachment, $tag, $data, $disabled, $params)
+	{
+		global $modSettings, $smcFunc, $user_info, $settings, $txt;
+
+		if (empty($modSettings['fancybox_prepare']))
+			return;
+
+		if ($params['{display}'] == 'embed') {
+			$alt = ' alt="' . (!empty($params['{alt}']) ? $params['{alt}'] : $currentAttachment['name']) . '"';
+			$title = !empty($data) ? ' title="' . $smcFunc['htmlspecialchars']($data) . '"' : '';
+
+			if (!empty($currentAttachment['is_image'])) {
+				if (empty($params['{width}']) && empty($params['{height}'])) {
+					$returnContext = '<a href="' . $currentAttachment['href'] . ';image" id="link_' . $currentAttachment['id'] . '"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : $currentAttachment['thumbnail']['href'] . '"' . $title) . $alt . ' class="bbc_img" loading="lazy"></a>';
+				} else {
+					$width = !empty($params['{width}']) ? ' width="' . $params['{width}'] . '"': '';
+					$height = !empty($params['{height}']) ? 'height="' . $params['{height}'] . '"' : '';
+					$returnContext = '<a href="' . $currentAttachment['href'] . ';image" id="link_' . $currentAttachment['id'] . '"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : $currentAttachment['href'] . ';image"' . $title . $width . $height) . $alt . ' class="bbc_img" loading="lazy"></a>';
+				}
+			}
+		}
 	}
 
 	/**

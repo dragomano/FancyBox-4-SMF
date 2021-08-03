@@ -23,7 +23,7 @@ $txt['fancybox_autoplay'] = 'Autoplay when any image is opening';
 $txt['fancybox_slideshow_speed'] = 'Delay between slides, in milliseconds';
 $txt['fancybox_show_link'] = 'Show download link under slides';
 $txt['fancybox_thumbnails'] = 'Show thumbnails below slides';
-$txt['fancybox_prepare'] = 'Processing of images that inserted with <strong>img</strong> tag';
+$txt['fancybox_prepare'] = 'Processing of images that inserted with <strong>[img]</strong> and <strong>[attach]</strong> tags';
 $txt['fancybox_traffic'] = 'Traffic saving <div class="smalltext">If enabled, unregistered users will see a special small image with running little man instead of original images. When clicked on it, they will see an original image.</div>';
 
 $txt['fancy_click'] = 'Click to load original image';
