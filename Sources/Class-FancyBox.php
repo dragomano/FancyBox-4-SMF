@@ -147,7 +147,7 @@ class FancyBox
 		foreach ($codes as &$code) {
 			if ($code['tag'] == 'img') {
 				if (!empty($code['parameters']['width'])) {
-					$code['content'] = '<a href="$1" class="fancybox" title="{title}" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="{alt}"{width}{height} loading="lazy"></a>';
+					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '" alt="traffic.gif"' : '$1" title="{title}" alt="{alt}"{width}{height}') . ' class="bbc_img" loading="lazy"></a>';
 				} else {
 					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img" loading="lazy"></a>';
 				}
