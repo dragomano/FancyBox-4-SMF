@@ -3,7 +3,7 @@
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
 	<id>Bugo:FancyBox</id>
 	<name>FancyBox 4 SMF</name>
-	<version>0.8</version>
+	<version>0.9</version>
 	<type>modification</type>
 
 	<install for="2.1.*">
@@ -11,12 +11,12 @@
 		<readme parsebbc="true" lang="english">readme/english.txt</readme>
 		<require-dir name="Themes" destination="$boarddir" />
 		<require-dir name="Sources" destination="$boarddir" />
-		<hook hook="integrate_pre_load" function="FancyBox::hooks" file="$sourcedir/Class-FancyBox.php" />
+		<hook hook="integrate_pre_load" function="FancyBox::hooks#" file="$sourcedir/Class-FancyBox.php" />
 		<redirect url="?action=admin;area=modsettings;sa=fancybox" timeout="1000" />
 	</install>
 
 	<uninstall for="2.1.*">
-		<hook hook="integrate_pre_load" function="FancyBox::hooks" file="$sourcedir/Class-FancyBox.php" reverse="true" />
+		<hook hook="integrate_pre_load" function="FancyBox::hooks#" file="$sourcedir/Class-FancyBox.php" reverse="true" />
 		<remove-file name="$sourcedir/Class-FancyBox.php" />
 		<remove-dir name="$languagedir/FancyBox" />
 		<remove-file name="$themedir/images/traffic.gif" />
