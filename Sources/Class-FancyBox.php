@@ -9,7 +9,7 @@
  * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 0.8
+ * @version 0.9
  */
 
 if (!defined('SMF'))
@@ -22,14 +22,14 @@ class FancyBox
 	 *
 	 * @return void
 	 */
-	public static function hooks()
+	public function hooks()
 	{
-		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme', false, __FILE__);
-		add_integration_function('integrate_bbc_codes', __CLASS__ . '::bbcCodes', false, __FILE__);
-		add_integration_function('integrate_attach_bbc_validate', __CLASS__ . '::attachBbcValidate', false, __FILE__);
-		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas', false, __FILE__);
-		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch', false, __FILE__);
-		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications', false, __FILE__);
+		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
+		add_integration_function('integrate_bbc_codes', __CLASS__ . '::bbcCodes#', false, __FILE__);
+		add_integration_function('integrate_attach_bbc_validate', __CLASS__ . '::attachBbcValidate#', false, __FILE__);
+		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas#', false, __FILE__);
+		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch#', false, __FILE__);
+		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
 	}
 
 	/**
@@ -37,7 +37,7 @@ class FancyBox
 	 *
 	 * @return void
 	 */
-	public static function loadTheme()
+	public function loadTheme()
 	{
 		global $context, $modSettings, $txt;
 
@@ -49,7 +49,7 @@ class FancyBox
 		loadCSSFile('jquery.fancybox.min.css');
 		loadCSSFile('jquery.fancybox.custom.css');
 
-		loadJavaScriptFile('jquery.fancybox.min.js', array('minimize' => true));
+		loadJavaScriptFile('jquery.fancybox.min.js', array('minimize' => true), 'jquery_fancybox');
 		addInlineJavaScript('
 		jQuery(document).ready(function ($) {
 			$("a[id^=link_]").addClass("fancybox").removeAttr("onclick").attr("data-fancybox", "gallery");
@@ -128,28 +128,36 @@ class FancyBox
 	 * @param array $codes
 	 * @return void
 	 */
-	public static function bbcCodes(&$codes)
+	public function bbcCodes(&$codes)
 	{
-		global $modSettings, $user_info, $settings, $txt;
+		global $modSettings, $user_info, $txt, $settings;
 
-		if (SMF == 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare']))
-			return;
-
-		$disabled = array();
-		if (!empty($modSettings['disabledBBC'])) {
-			foreach (explode(",", $modSettings['disabledBBC']) as $tag)
-				$disabled[$tag] = true;
-		}
-
-		if (isset($disabled['img']))
+		if ($this->isItShouldNotWork())
 			return;
 
 		foreach ($codes as &$code) {
-			if ($code['tag'] == 'img') {
-				if (!empty($code['parameters']['width'])) {
-					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '" alt="traffic.gif"' : '$1" title="{title}" alt="{alt}"{width}{height}') . ' class="bbc_img" loading="lazy"></a>';
+			if ($code['tag'] === 'img') {
+				if ($code['content'] === '$1') {
+					$code['validate'] = function(&$tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
+						$url = strtr($data, array('<br>' => ''));
+
+						if (parse_url($url, PHP_URL_SCHEME) === null)
+							$url = '//' . ltrim($url, ':/');
+						else
+							$url = get_proxied_url($url);
+
+						$showGuestImage = !empty($modSettings['fancybox_traffic']) && $user_info['is_guest'];
+						$alt = !empty($params['{alt}']) || $showGuestImage ? ' alt="' . ($showGuestImage ? 'traffic.gif' : $params['{alt}']) . '"' : ' alt=""';
+						$title = !empty($params['{title}']) || $showGuestImage ? ' title="' . ($showGuestImage ? $txt['fancy_click'] : $params['{title}']) . '"' : '';
+
+						$data = isset($disabled[$tag['tag']]) ? $url : '<a href="' . $url . '" class="fancybox" data-fancybox="topic"><img src="' . ($showGuestImage ? $settings['default_images_url'] . '/traffic.gif' : $url) . '"' . $alt . $title . $params['{width}'] . $params['{height}'] . ' class="bbc_img' . (!empty($params['{width}']) || !empty($params['{height}']) ? ' resized' : '') . '" loading="lazy"></a>';
+					};
 				} else {
-					$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img" loading="lazy"></a>';
+					if (!empty($code['parameters']['width'])) {
+						$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '" alt="traffic.gif"' : '$1" title="{title}" alt="{alt}"{width}{height}') . ' class="bbc_img" loading="lazy"></a>';
+					} else {
+						$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img" loading="lazy"></a>';
+					}
 				}
 			}
 		}
@@ -168,14 +176,14 @@ class FancyBox
 	 * @param array $params
 	 * @return void
 	 */
-	public static function attachBbcValidate(&$returnContext, $currentAttachment, $tag, $data, $disabled, $params)
+	public function attachBbcValidate(&$returnContext, $currentAttachment, $tag, $data, $disabled, $params)
 	{
 		global $modSettings, $smcFunc, $user_info, $settings, $txt;
 
-		if (empty($modSettings['fancybox_prepare']))
+		if ($this->isItShouldNotWork('attach'))
 			return;
 
-		if ($params['{display}'] == 'embed') {
+		if ($params['{display}'] === 'embed') {
 			$alt = ' alt="' . (!empty($params['{alt}']) ? $params['{alt}'] : $currentAttachment['name']) . '"';
 			$title = !empty($data) ? ' title="' . $smcFunc['htmlspecialchars']($data) . '"' : '';
 
@@ -197,7 +205,7 @@ class FancyBox
 	 * @param array $admin_areas
 	 * @return void
 	 */
-	public static function adminAreas(&$admin_areas)
+	public function adminAreas(&$admin_areas)
 	{
 		global $txt;
 
@@ -212,9 +220,9 @@ class FancyBox
 	 * @param array $settings_search
 	 * @return void
 	 */
-	public static function adminSearch(&$language_files, &$include_files, &$settings_search)
+	public function adminSearch(&$language_files, &$include_files, &$settings_search)
 	{
-		$settings_search[] = array(__CLASS__ . '::settings', 'area=modsettings;sa=fancybox');
+		$settings_search[] = array(array($this, 'settings'), 'area=modsettings;sa=fancybox');
 	}
 
 	/**
@@ -223,9 +231,9 @@ class FancyBox
 	 * @param array $subActions
 	 * @return void
 	 */
-	public static function modifyModifications(&$subActions)
+	public function modifyModifications(&$subActions)
 	{
-		$subActions['fancybox'] = array(__CLASS__, 'settings');
+		$subActions['fancybox'] = array($this, 'settings');
 	}
 
 	/**
@@ -234,7 +242,7 @@ class FancyBox
 	 * @param boolean $return_config
 	 * @return array|void
 	 */
-	public static function settings($return_config = false)
+	public function settings($return_config = false)
 	{
 		global $context, $txt, $scripturl, $modSettings;
 
@@ -283,5 +291,16 @@ class FancyBox
 		}
 
 		prepareDBSettingContext($config_vars);
+	}
+
+	/**
+	 * @param string $tag
+	 * @return bool
+	 */
+	private function isItShouldNotWork($tag = 'img')
+	{
+		global $modSettings, $context;
+
+		return SMF === 'BACKGROUND' || SMF === 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare']) || in_array($context['current_action'], array('helpadmin', 'printpage')) || $context['current_subaction'] === 'showoperations' || (!empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])));
 	}
 }
