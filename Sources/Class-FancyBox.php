@@ -9,7 +9,7 @@
  * @copyright 2012-2021 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 0.9
+ * @version 1.0
  */
 
 if (!defined('SMF'))
@@ -43,7 +43,7 @@ class FancyBox
 
 		loadLanguage('FancyBox/');
 
-		if (in_array($context['current_action'], array('helpadmin', 'printpage')))
+		if (SMF === 'BACKGROUND' || SMF === 'SSI' || in_array($context['current_action'], array('helpadmin', 'printpage')))
 			return;
 
 		loadCSSFile('jquery.fancybox.min.css');
@@ -56,7 +56,7 @@ class FancyBox
 			$(".post a > img.atc_img").each(function() {
 				let id = $(this).parent("a").attr("id");
 				$(this).parent("a").attr("id", id + "_post");
-			});' . (!empty($modSettings['fancybox_prepare']) ? '
+			});' . (!empty($modSettings['fancybox_prepare_img']) && !empty($modSettings['fancybox_save_url_img']) ? '
 			$("a.bbc_link").each(function() {
 				let img_link = $(this);
 				if (!img_link.text()) {
@@ -65,7 +65,7 @@ class FancyBox
 						.attr("class", "bbc_link")
 						.removeAttr("data-fancybox")
 						.attr("href", img_link.attr("href"))
-						.attr("target", "_blank");
+						.attr("target", "_blank")
 					img_link.remove();
 				}
 			});' : '') . '
@@ -140,20 +140,16 @@ class FancyBox
 				if ($code['content'] === '$1') {
 					$code['validate'] = function(&$tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
 						$url = strtr($data, array('<br>' => ''));
-
-						if (parse_url($url, PHP_URL_SCHEME) === null)
-							$url = '//' . ltrim($url, ':/');
-						else
-							$url = get_proxied_url($url);
+						$url = parse_url($url, PHP_URL_SCHEME) === null ? '//' . ltrim($url, ':/') : get_proxied_url($url);
 
 						$showGuestImage = !empty($modSettings['fancybox_traffic']) && $user_info['is_guest'];
-						$alt = !empty($params['{alt}']) || $showGuestImage ? ' alt="' . ($showGuestImage ? 'traffic.gif' : $params['{alt}']) . '"' : ' alt=""';
+						$alt = !empty($params['{alt}']) || $showGuestImage ? ' alt="' . ($showGuestImage ? 'traffic.gif' : $params['{alt}']) . '"' : ' alt="' . $url . '"';
 						$title = !empty($params['{title}']) || $showGuestImage ? ' title="' . ($showGuestImage ? $txt['fancy_click'] : $params['{title}']) . '"' : '';
 
-						$data = isset($disabled[$tag['tag']]) ? $url : '<a href="' . $url . '" class="fancybox" data-fancybox="topic"><img src="' . ($showGuestImage ? $settings['default_images_url'] . '/traffic.gif' : $url) . '"' . $alt . $title . $params['{width}'] . $params['{height}'] . ' class="bbc_img' . (!empty($params['{width}']) || !empty($params['{height}']) ? ' resized' : '') . '" loading="lazy"></a>';
+						$data = isset($disabled[$tag['tag']]) ? $url : '<a href="' . $url . '" class="fancybox" data-fancybox="topic"><img src="' . ($showGuestImage ? $settings['default_images_url'] . '/traffic.gif' : $url) . '"' . $alt . $title . $params['{width}'] . $params['{height}'] . ' class="bbc_img" loading="lazy"></a>';
 					};
 				} else {
-					if (!empty($code['parameters']['width'])) {
+					if (!empty($code['parameters']['width']) || !empty($code['parameters']['height'])) {
 						$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '" alt="traffic.gif"' : '$1" title="{title}" alt="{alt}"{width}{height}') . ' class="bbc_img" loading="lazy"></a>';
 					} else {
 						$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img" loading="lazy"></a>';
@@ -178,7 +174,7 @@ class FancyBox
 	 */
 	public function attachBbcValidate(&$returnContext, $currentAttachment, $tag, $data, $disabled, $params)
 	{
-		global $modSettings, $smcFunc, $user_info, $settings, $txt;
+		global $smcFunc, $modSettings, $user_info, $settings, $txt;
 
 		if ($this->isItShouldNotWork('attach'))
 			return;
@@ -189,7 +185,7 @@ class FancyBox
 
 			if (!empty($currentAttachment['is_image'])) {
 				if (empty($params['{width}']) && empty($params['{height}'])) {
-					$returnContext = '<a href="' . $currentAttachment['href'] . ';image" id="link_' . $currentAttachment['id'] . '"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : $currentAttachment['thumbnail']['href'] . '"' . $title) . $alt . ' class="bbc_img" loading="lazy"></a>';
+					$returnContext = '<a href="' . $currentAttachment['href'] . ';image" id="link_' . $currentAttachment['id'] . '"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : (!empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['thumbnail']['href'] : $currentAttachment['href']) . '"' . $title) . $alt . ' class="bbc_img" loading="lazy"></a>';
 				} else {
 					$width = !empty($params['{width}']) ? ' width="' . $params['{width}'] . '"': '';
 					$height = !empty($params['{height}']) ? 'height="' . $params['{height}'] . '"' : '';
@@ -276,8 +272,11 @@ class FancyBox
 			array('int', 'fancybox_slideshow_speed'),
 			array('check', 'fancybox_show_link'),
 			array('check', 'fancybox_thumbnails'),
-			array('check', 'fancybox_prepare'),
-			array('check', 'fancybox_traffic', 'disabled' => empty($modSettings['fancybox_prepare']) ? 'disabled' : '')
+			array('check', 'fancybox_prepare_img'),
+			array('check', 'fancybox_save_url_img', 'disabled' => empty($modSettings['fancybox_prepare_img'])),
+			array('check', 'fancybox_prepare_attach'),
+			array('check', 'fancybox_show_thumb_for_attach', 'subtext' => $txt['fancybox_show_thumb_for_attach_subtext'], 'disabled' => empty($modSettings['fancybox_prepare_attach'])),
+			array('check', 'fancybox_traffic', 'disabled' => empty($modSettings['fancybox_prepare_img']) && empty($modSettings['fancybox_prepare_attach']) ? 'disabled' : '')
 		);
 
 		if ($return_config)
@@ -301,6 +300,6 @@ class FancyBox
 	{
 		global $modSettings, $context;
 
-		return SMF === 'BACKGROUND' || SMF === 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare']) || in_array($context['current_action'], array('helpadmin', 'printpage')) || $context['current_subaction'] === 'showoperations' || (!empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])));
+		return SMF === 'BACKGROUND' || SMF === 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare_' . $tag]) || in_array($context['current_action'], array('helpadmin', 'printpage')) || $context['current_subaction'] === 'showoperations' || (!empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])));
 	}
 }
