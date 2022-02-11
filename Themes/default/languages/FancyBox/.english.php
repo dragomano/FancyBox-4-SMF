@@ -9,35 +9,29 @@
 
 $txt['fancybox_settings'] = 'FancyBox 4 SMF';
 $txt['fancybox_desc'] = 'This modification adds nice fancybox effects to in-line and attached images.';
-$txt['fancybox_image_preload'] = 'Wait for images to load before displaying';
-$txt['fancybox_animation_effect'] = 'Open/close animation effect';
-$txt['fancybox_animation_effect_set'] = array(
-	false => $txt['no'], 'zoom' => 'Zoom images from/to thumbnail', 'fade' => 'Fade appearance/disappearance', 'zoom-in-out' => 'Elastic zoom in/out'
-);
-$txt['fancybox_animation_speed'] = 'Duration in ms for open/close animation';
-$txt['fancybox_transition_effect'] = 'Transition effect between slides';
-$txt['fancybox_transition_effect_set'] = array(
-	false => $txt['no'], 'fade' => 'Fade transition', 'slide' => 'slide', 'circular' => 'circular', 'tube' => 'tube', 'zoom-in-out' => 'zoom-in-out', 'rotate' => 'rotate');
-$txt['fancybox_transition_speed'] = 'Duration in ms for transition animation';
-$txt['fancybox_autoplay'] = 'Autoplay when any image is opening';
-$txt['fancybox_slideshow_speed'] = 'Delay between slides, in milliseconds';
-$txt['fancybox_show_link'] = 'Show download link under slides';
+$txt['fancybox_show_download_link'] = 'Show download button';
 $txt['fancybox_thumbnails'] = 'Show thumbnails below slides';
 $txt['fancybox_prepare_img'] = 'Processing of images that inserted with the <strong>[img]</strong> tag';
+$txt['fancybox_show_thumb_for_img'] = 'Display thumbnails of images inserted using the <strong>[img]</strong> tag';
+$txt['fancybox_save_url_img'] = 'If the images are inside the links, leave the links untouched';
+$txt['fancybox_show_thumb_for_img_subtext'] = 'You can specify the width of images in <a href="%1$s">attachment settings</a>.';
 $txt['fancybox_prepare_attach'] = 'Processing of images that inserted with the <strong>[attach]</strong> tag';
 $txt['fancybox_show_thumb_for_attach'] = 'Display thumbnails of images inserted using the <strong>[attach]</strong> tag';
 $txt['fancybox_show_thumb_for_attach_subtext'] = 'Disable to display images unchanged.';
 $txt['fancybox_traffic'] = 'Traffic saving <div class="smalltext">If enabled, unregistered users will see a special small image with running little man instead of original images. When clicked on it, they will see an original image.</div>';
 
 $txt['fancy_click'] = 'Click to load original image';
-$txt['fancy_download_link'] = 'Download image';
-$txt['fancy_text_error'] = 'The requested content cannot be loaded.<br />Please try again later.';
 $txt['fancy_button_next'] = 'Next';
 $txt['fancy_button_prev'] = 'Previous';
-$txt['fancy_slideshow_start'] = 'Start slideshow';
-$txt['fancy_slideshow_pause'] = 'Pause slideshow';
-$txt['fancy_full_screen'] = 'Full screen';
-$txt['fancy_thumbnails'] = 'Thumbnails';
-$txt['fancy_button_download'] = 'Download';
-$txt['fancy_button_share'] = 'Share';
-$txt['fancy_button_zoom'] = 'Zoom';
+$txt['fancy_text_error'] = 'Something Went Wrong, Please Try Again Later';
+$txt['fancy_text_modal'] = 'You can close this modal content with the ESC key';
+$txt['fancy_image_error'] = 'Image Not Found';
+$txt['fancy_element_not_found'] = 'HTML Element Not Found';
+$txt['fancy_ajax_not_found'] = 'Error Loading AJAX: Not Found';
+$txt['fancy_ajax_forbidden'] = 'Error Loading AJAX: Forbidden';
+$txt['fancy_iframe_error'] = 'Error Loading Page';
+$txt['fancy_toggle_zoom'] = 'Toggle zoom level';
+$txt['fancy_toggle_thumbs'] = 'Toggle thumbnails';
+$txt['fancy_toggle_slideshow'] = 'Toggle slideshow';
+$txt['fancy_toggle_fullscreen'] = 'Toggle full-screen mode';
+$txt['fancy_download'] = 'Download';

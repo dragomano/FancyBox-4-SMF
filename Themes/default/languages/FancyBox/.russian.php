@@ -9,21 +9,11 @@
 
 $txt['fancybox_settings'] = 'FancyBox 4 SMF';
 $txt['fancybox_desc'] = 'Эта модификация добавляет красивые эффекты при просмотре изображений в сообщениях и вложениях.';
-$txt['fancybox_image_preload'] = 'Дожидаться загрузки изображений перед отображением';
-$txt['fancybox_animation_effect'] = 'Эффект при открытии/закрытии изображений';
-$txt['fancybox_animation_effect_set'] = array(
-	false => $txt['no'], 'zoom' => 'Масштабирование изображений от/до миниатюр', 'fade' => 'Плавное появление/исчезновение', 'zoom-in-out' => 'Эластичное увеличение/уменьшение'
-);
-$txt['fancybox_animation_speed'] = 'Скорость анимации при открытии/закрытии, в миллисекундах';
-$txt['fancybox_transition_effect'] = 'Эффект перехода между изображениями';
-$txt['fancybox_transition_effect_set'] = array(
-	false => $txt['no'], 'fade' => 'Плавный переход', 'slide' => 'slide', 'circular' => 'circular', 'tube' => 'tube', 'zoom-in-out' => 'zoom-in-out', 'rotate' => 'rotate');
-$txt['fancybox_transition_speed'] = 'Скорость анимации при переходе, в миллисекундах';
-$txt['fancybox_autoplay'] = 'Автозапуск слайд-шоу (если изображений несколько)';
-$txt['fancybox_slideshow_speed'] = 'Задержка перехода между слайдами, в миллисекундах';
-$txt['fancybox_show_link'] = 'Отображать ссылку для скачивания под слайдами';
+$txt['fancybox_show_download_link'] = 'Отображать кнопку для скачивания';
 $txt['fancybox_thumbnails'] = 'Отображать миниатюры при просмотре слайдов';
 $txt['fancybox_prepare_img'] = 'Обработка изображений, вставленных с помощью тега <strong>[img]</strong>';
+$txt['fancybox_show_thumb_for_img'] = 'Отображать миниатюры изображений, вставленных с помощью тега <strong>[img]</strong>';
+$txt['fancybox_show_thumb_for_img_subtext'] = 'Ширину изображений можно указать в <a href="%1$s">настройках вложений</a>.';
 $txt['fancybox_save_url_img'] = 'Если изображения находятся внутри ссылок, оставлять ссылки нетронутыми';
 $txt['fancybox_prepare_attach'] = 'Обработка изображений, вставленных с помощью тега <strong>[attach]</strong>';
 $txt['fancybox_show_thumb_for_attach'] = 'Отображать миниатюры изображений, вставленных с помощью тега <strong>[attach]</strong>';
@@ -31,14 +21,17 @@ $txt['fancybox_show_thumb_for_attach_subtext'] = 'Отключите, чтобы
 $txt['fancybox_traffic'] = 'Экономия трафика <div class="smalltext">Если включено, незарегистрированные пользователи будут видеть маленькую картинку с бегущим человечком, вместо оригинальных изображений. При клике на эту картинку будет загружаться оригинал.</div>';
 
 $txt['fancy_click'] = 'Нажмите для загрузки оригинального изображения';
-$txt['fancy_download_link'] = 'Скачать изображение';
-$txt['fancy_text_error'] = 'Запрашиваемое изображение не может быть загружено.<br />Попробуйте позже.';
 $txt['fancy_button_next'] = 'Следующее';
 $txt['fancy_button_prev'] = 'Предыдущее';
-$txt['fancy_slideshow_start'] = 'Слайдшоу';
-$txt['fancy_slideshow_pause'] = 'Пауза';
-$txt['fancy_full_screen'] = 'Во весь экран';
-$txt['fancy_thumbnails'] = 'Миниатюры';
-$txt['fancy_button_download'] = 'Скачать';
-$txt['fancy_button_share'] = 'Поделиться';
-$txt['fancy_button_zoom'] = 'Увеличить';
+$txt['fancy_text_error'] = 'Что-то пошло не так. Пожалуйста, повторите попытку позже';
+$txt['fancy_text_modal'] = 'Вы можете закрыть данное окно, нажав клавишу ESC';
+$txt['fancy_image_error'] = 'Изображение не найдено';
+$txt['fancy_element_not_found'] = 'HTML элемент не найден';
+$txt['fancy_ajax_not_found'] = 'Ошибка загрузки AJAX: Не найдено';
+$txt['fancy_ajax_forbidden'] = 'Ошибка загрузки AJAX: Запрещено';
+$txt['fancy_iframe_error'] = 'Ошибка загрузки страницы';
+$txt['fancy_toggle_zoom'] = 'Переключить уровень масштаба';
+$txt['fancy_toggle_thumbs'] = 'Переключить миниатюры';
+$txt['fancy_toggle_slideshow'] = 'Переключить слайдшоу';
+$txt['fancy_toggle_fullscreen'] = 'Переключить режим полного экрана';
+$txt['fancy_download'] = 'Скачать';

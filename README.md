@@ -1,17 +1,15 @@
-# FancyBox-4-SMF
-![SMF 2.1](https://img.shields.io/badge/SMF-2.1-blue.svg?style=flat&color=ed6033)
+# FancyBox 4 SMF
+[![SMF 2.1](https://img.shields.io/badge/SMF-2.1-ed6033.svg?style=flat)](https://github.com/SimpleMachines/SMF2.1)
 ![License](https://img.shields.io/github/license/dragomano/fancybox-4-smf)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/c4ba05b64522462ea03cf68f5434c2eb)](https://www.codacy.com/gh/dragomano/FancyBox-4-SMF/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dragomano/FancyBox-4-SMF&amp;utm_campaign=Badge_Grade)
+![Hooks only: Yes](https://img.shields.io/badge/Hooks%20only-YES-blue)
 
-* **Author:** Bugo [dragomano.ru](https://dragomano.ru/mods/fancybox-4-smf)
-* **License:** [GPL-3.0](https://github.com/dragomano/FancyBox-4-SMF/blob/master/LICENSE)
-* **Compatible with:** SMF 2.1 RC4+
-* **Tested on:** PHP 7.4.25
-* **Hooks only:** Yes
+* **Tested on:** PHP 7.4.27
 * **Languages:** English, Russian
 
 ## Description
-[fancyBox](https://fancyapps.com/fancybox/3/) is a tool that offers a nice and elegant way to add zooming functionality for images on your forum. It is built at the top of the popular JavaScript framework jQuery and is both easy to implement and a snap to customize.
+This modification adds a [fancyBox](https://fancyapps.com/docs/ui/fancybox/) on your SMF forum.
+
+![](https://user-images.githubusercontent.com/229402/153417429-6788f2e1-1846-4560-9b5e-e1d2b3e9edab.png)
 
 ## Описание
-Использование для просмотра изображений в сообщениях лёгкой и очень красивой jQuery-библиотеки [fancyBox](https://fancyapps.com/fancybox/3/).
+Эта модификация добавляет скрипт fancyBox на ваш SMF форум, для удобного просмотра изображений.

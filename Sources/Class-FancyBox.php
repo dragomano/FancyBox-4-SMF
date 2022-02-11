@@ -6,22 +6,17 @@
  * @package FancyBox 4 SMF
  * @link https://custom.simplemachines.org/mods/index.php?mod=3303
  * @author Bugo https://dragomano.ru/mods/fancybox-4-smf
- * @copyright 2012-2021 Bugo
+ * @copyright 2012-2022 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.0
+ * @version 1.1
  */
 
 if (!defined('SMF'))
 	die('Hacking attempt...');
 
-class FancyBox
+final class FancyBox
 {
-	/**
-	 * Подключаем используемые хуки
-	 *
-	 * @return void
-	 */
 	public function hooks()
 	{
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
@@ -32,252 +27,172 @@ class FancyBox
 		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
 	}
 
-	/**
-	 * Подключаем используемые скрипты и стили
-	 *
-	 * @return void
-	 */
 	public function loadTheme()
 	{
 		global $context, $modSettings, $txt;
 
 		loadLanguage('FancyBox/');
 
-		if (SMF === 'BACKGROUND' || SMF === 'SSI' || in_array($context['current_action'], array('helpadmin', 'printpage')))
+		if (SMF === 'BACKGROUND' || SMF === 'SSI' || in_array($context['current_action'], ['helpadmin', 'printpage']))
 			return;
 
-		loadCSSFile('jquery.fancybox.min.css');
-		loadCSSFile('jquery.fancybox.custom.css');
+		loadCSSFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css', ['external' => true]);
 
-		loadJavaScriptFile('jquery.fancybox.min.js', array('minimize' => true), 'jquery_fancybox');
+		loadJavaScriptFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js', ['external' => true]);
+
 		addInlineJavaScript('
-		jQuery(document).ready(function ($) {
-			$("a[id^=link_]").addClass("fancybox").removeAttr("onclick").attr("data-fancybox", "gallery");
-			$(".post a > img.atc_img").each(function() {
-				let id = $(this).parent("a").attr("id");
-				$(this).parent("a").attr("id", id + "_post");
-			});' . (!empty($modSettings['fancybox_prepare_img']) && !empty($modSettings['fancybox_save_url_img']) ? '
-			$("a.bbc_link").each(function() {
-				let img_link = $(this);
-				if (!img_link.text()) {
-					img_link
-						.next()
-						.attr("class", "bbc_link")
-						.removeAttr("data-fancybox")
-						.attr("href", img_link.attr("href"))
-						.attr("target", "_blank")
-					img_link.remove();
-				}
-			});' : '') . '
-			$("div[id*=_footer]").each(function() {
-				let id = $(this).attr("id");
-				$("#" + id + " a[data-fancybox=gallery]").attr("data-fancybox", "gallery_" + id);
-			});
-			$(".fancybox").fancybox({
-				buttons: [
+		Fancybox.bind("[data-fancybox]", {
+			Toolbar: {
+				display: [
+					{ id: "prev", position: "center" },
+					{ id: "counter", position: "center" },
+					{ id: "next", position: "center" },
 					"zoom",
-					"slideShow",
-					"fullScreen",' . (!empty($modSettings['fancybox_thumbnails']) ? '
-					"thumbs",' : '') . '
-					"close"
+					"slideshow",
+					"fullscreen",' . (empty($modSettings['fancybox_show_download_link']) ? '' : '
+					"download",') . (empty($modSettings['fancybox_thumbnails']) ? '' : '
+					"thumbs",') . '
+					"close",
 				],
-				image: {
-					preload: ' . (!empty($modSettings['fancybox_image_preload']) ? 'true' : 'false') . '
-				},
-				animationEffect: ' . (!empty($modSettings['fancybox_animation_effect']) ? '"' . $modSettings['fancybox_animation_effect'] . '"' : 'false') . ',
-				animationDuration: ' . (isset($modSettings['fancybox_animation_speed']) ? (int) $modSettings['fancybox_animation_speed'] : 366) . ',
-				transitionEffect: ' . (!empty($modSettings['fancybox_transition_effect']) ? '"' . $modSettings['fancybox_transition_effect'] . '"' : 'false') . ',
-				slideShow: {
-					autoStart: ' . (!empty($modSettings['fancybox_autoplay']) ? 'true' : 'false') . ',
-					speed: ' . (isset($modSettings['fancybox_slideshow_speed']) ? (int) $modSettings['fancybox_slideshow_speed'] : 4000) . '
-				},' . (!empty($modSettings['fancybox_show_link']) ? '
-				caption: function(instance, item) {
-					let caption = $(this).data(\'caption\') || \'\';
-					if (item.type === \'image\') {
-						caption = (caption.length ? caption + \'<br>\' : \'\') + \'<a href="\' + item.src.replace(";image", "") + \'">' . $txt['fancy_download_link'] . '<\/a>\' ;
-					}
-					return caption;
-				},' : '') . (!empty($modSettings['fancybox_thumbnails']) ? '
-				thumbs: {
-					autoStart: true,
-					axis: "x"
-				},' : '') . '
-				lang: "' . (isset($txt['fancy_thumbnails']) ? $txt['lang_dictionary'] : 'en') . '",
-				i18n: {
-					' . (isset($txt['fancy_thumbnails']) ? $txt['lang_dictionary'] : 'en') . ': {
-						CLOSE: "' . $txt['find_close'] . '",
-						NEXT: "' . $txt['fancy_button_next'] . '",
-						PREV: "' . $txt['fancy_button_prev']. '",
-						ERROR: "' . $txt['fancy_text_error']. '",
-						PLAY_START: "' . $txt['fancy_slideshow_start'] . '",
-						PLAY_STOP: "' . $txt['fancy_slideshow_pause'] . '",
-						FULL_SCREEN: "' . $txt['fancy_full_screen'] . '",
-						THUMBS: "' . $txt['fancy_thumbnails'] . '",
-						DOWNLOAD: "' . $txt['fancy_button_download'] . '",
-						SHARE: "' . $txt['fancy_button_share'] . '",
-						ZOOM: "' . $txt['fancy_button_zoom'] . '"
-					}
-				}
-			});
+			},' . (empty($modSettings['fancybox_thumbnails']) ? '
+			Thumbs: {
+				autoStart: false,
+			},' : '') . '
+			l10n: {
+				CLOSE: "' . $txt['find_close'] . '",
+				NEXT: "' . $txt['fancy_button_next'] . '",
+				PREV: "' . $txt['fancy_button_prev'] . '",
+				MODAL: "' . $txt['fancy_text_modal'] . '",
+				ERROR: "' . $txt['fancy_text_error'] . '",
+				IMAGE_ERROR: "' . $txt['fancy_image_error'] . '",
+				ELEMENT_NOT_FOUND: "' . $txt['fancy_element_not_found'] . '",
+				AJAX_NOT_FOUND: "' . $txt['fancy_ajax_not_found'] . '",
+				AJAX_FORBIDDEN: "' . $txt['fancy_ajax_forbidden'] . '",
+				IFRAME_ERROR: "' . $txt['fancy_iframe_error'] . '",
+				TOGGLE_ZOOM: "' . $txt['fancy_toggle_zoom'] . '",
+				TOGGLE_THUMBS: "' . $txt['fancy_toggle_thumbs'] . '",
+				TOGGLE_SLIDESHOW: "' . $txt['fancy_toggle_slideshow'] . '",
+				TOGGLE_FULLSCREEN: "' . $txt['fancy_toggle_fullscreen'] . '",
+				DOWNLOAD: "' . $txt['fancy_download'] . '"
+			}
+		});
+		let attachments = document.querySelectorAll(".attachments_top a");
+		attachments && attachments.forEach(function (item) {
+			let id = item.parentNode.parentNode.parentNode.getAttribute("id");
+			item.removeAttribute("onclick");
+			item.setAttribute("data-fancybox", "gallery_" + id);
 		});', true);
+
+		if (!empty($modSettings['fancybox_prepare_img']) && !empty($modSettings['fancybox_save_url_img'])) {
+			addInlineJavaScript('
+		let linkImages = document.querySelectorAll("a.bbc_link");
+		linkImages && linkImages.forEach(function (item) {
+			if (! item.textContent) {
+				let imgLink = item.nextElementSibling;
+				imgLink.classList.add("bbc_link");
+				imgLink.removeAttribute("data-fancybox");
+				imgLink.setAttribute("href", item.getAttribute("href"));
+				imgLink.setAttribute("target", "_blank");
+				item.parentNode.removeChild(item);
+			}
+		});', true);
+		}
 	}
 
-	/**
-	 * Меняем обработку ББ-кода [img]
-	 *
-	 * @param array $codes
-	 * @return void
-	 */
-	public function bbcCodes(&$codes)
+	public function bbcCodes(array &$codes)
 	{
 		global $modSettings, $user_info, $txt, $settings;
 
-		if ($this->isItShouldNotWork())
+		if (! $this->shouldItWork())
 			return;
 
 		foreach ($codes as &$code) {
 			if ($code['tag'] === 'img') {
-				if ($code['content'] === '$1') {
-					$code['validate'] = function(&$tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
-						$url = strtr($data, array('<br>' => ''));
-						$url = parse_url($url, PHP_URL_SCHEME) === null ? '//' . ltrim($url, ':/') : get_proxied_url($url);
+				$code['validate'] = function(&$tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
+					$url = iri_to_url(strtr($data, array('<br>' => '')));
+					$url = parse_iri($url, PHP_URL_SCHEME) === null ? '//' . ltrim($url, ':/') : get_proxied_url($url);
 
-						$showGuestImage = !empty($modSettings['fancybox_traffic']) && $user_info['is_guest'];
-						$alt = !empty($params['{alt}']) || $showGuestImage ? ' alt="' . ($showGuestImage ? 'traffic.gif' : $params['{alt}']) . '"' : ' alt="' . $url . '"';
-						$title = !empty($params['{title}']) || $showGuestImage ? ' title="' . ($showGuestImage ? $txt['fancy_click'] : $params['{title}']) . '"' : '';
-
-						$data = isset($disabled[$tag['tag']]) ? $url : '<a href="' . $url . '" class="fancybox" data-fancybox="topic"><img src="' . ($showGuestImage ? $settings['default_images_url'] . '/traffic.gif' : $url) . '"' . $alt . $title . $params['{width}'] . $params['{height}'] . ' class="bbc_img" loading="lazy"></a>';
-					};
-				} else {
-					if (!empty($code['parameters']['width']) || !empty($code['parameters']['height'])) {
-						$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '" alt="traffic.gif"' : '$1" title="{title}" alt="{alt}"{width}{height}') . ' class="bbc_img" loading="lazy"></a>';
-					} else {
-						$code['content'] = '<a href="$1" class="fancybox" data-fancybox="topic"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] : '$1') . '" alt="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? 'traffic.gif' : '$1') . '" class="bbc_img" loading="lazy"></a>';
+					if (!empty($modSettings['fancybox_show_thumb_for_img']) && empty($params['{width}']) && !empty($modSettings['attachmentThumbWidth'])) {
+						$params['{width}'] = ' width="' . $modSettings['attachmentThumbWidth'] . '"';
 					}
-				}
+
+					$showGuestImage = !empty($modSettings['fancybox_traffic']) && $user_info['is_guest'];
+					$alt = !empty($params['{alt}']) || $showGuestImage ? ' alt="' . ($showGuestImage ? 'traffic.gif' : $params['{alt}']) . '"' : ' alt=""';
+					$title = !empty($params['{title}']) || $showGuestImage ? ' title="' . ($showGuestImage ? $txt['fancy_click'] : $params['{title}']) . '"' : '';
+					$caption = ' data-caption="' . (!empty($params['{title}']) ? $params['{title}'] : (!empty($params['{alt}']) ? $params['{alt}'] : '')) . '"';
+
+					$data = isset($disabled[$tag['tag']]) ? $url : '<a data-src="' . $url . '" data-fancybox="topic"' . $caption . '><img src="' . ($showGuestImage ? $settings['default_images_url'] . '/traffic.gif' : $url) . '"' . $alt . $title . $params['{width}'] . $params['{height}'] . ' class="bbc_img" loading="lazy"></a>';
+				};
 			}
 		}
 
 		unset($code);
 	}
 
-	/**
-	 * Меняем обработку ББ-кода [attach] для изображений
-	 *
-	 * @param string $returnContext
-	 * @param array $currentAttachment
-	 * @param array $tag
-	 * @param string $data
-	 * @param array $disabled
-	 * @param array $params
-	 * @return void
-	 */
-	public function attachBbcValidate(&$returnContext, $currentAttachment, $tag, $data, $disabled, $params)
+	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, array $disabled, array $params)
 	{
 		global $smcFunc, $modSettings, $user_info, $settings, $txt;
 
-		if ($this->isItShouldNotWork('attach'))
+		if (! $this->shouldItWork('attach'))
 			return;
 
 		if ($params['{display}'] === 'embed') {
 			$alt = ' alt="' . (!empty($params['{alt}']) ? $params['{alt}'] : $currentAttachment['name']) . '"';
+			$caption = ' data-caption="' . (!empty($params['{alt}']) ? $params['{alt}'] : $currentAttachment['name']) . '"';
 			$title = !empty($data) ? ' title="' . $smcFunc['htmlspecialchars']($data) . '"' : '';
 
 			if (!empty($currentAttachment['is_image'])) {
 				if (empty($params['{width}']) && empty($params['{height}'])) {
-					$returnContext = '<a href="' . $currentAttachment['href'] . ';image" id="link_' . $currentAttachment['id'] . '"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : (!empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['thumbnail']['href'] : $currentAttachment['href']) . '"' . $title) . $alt . ' class="bbc_img" loading="lazy"></a>';
+					$returnContext = '<a data-fancybox="topic" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : (!empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['thumbnail']['href'] : $currentAttachment['href']) . '"' . $title) . $alt . ' class="bbc_img" loading="lazy"></a>';
 				} else {
 					$width = !empty($params['{width}']) ? ' width="' . $params['{width}'] . '"': '';
 					$height = !empty($params['{height}']) ? 'height="' . $params['{height}'] . '"' : '';
-					$returnContext = '<a href="' . $currentAttachment['href'] . ';image" id="link_' . $currentAttachment['id'] . '"><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : $currentAttachment['href'] . ';image"' . $title . $width . $height) . $alt . ' class="bbc_img" loading="lazy"></a>';
+					$returnContext = '<a data-fancybox="topic" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '><img src="' . (!empty($modSettings['fancybox_traffic']) && $user_info['is_guest'] ? $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"' : $currentAttachment['href'] . ';image"' . $title . $width . $height) . $alt . ' class="bbc_img" loading="lazy"></a>';
 				}
 			}
 		}
 	}
 
-	/**
-	 * Подключаем вкладку с настройками мода в админке
-	 *
-	 * @param array $admin_areas
-	 * @return void
-	 */
-	public function adminAreas(&$admin_areas)
+	public function adminAreas(array &$admin_areas)
 	{
 		global $txt;
 
-		$admin_areas['config']['areas']['modsettings']['subsections']['fancybox'] = array($txt['fancybox_settings']);
+		$admin_areas['config']['areas']['modsettings']['subsections']['fancybox'] = [$txt['fancybox_settings']];
 	}
 
-	/**
-	 * Легкий доступ к настройкам мода через быстрый поиск в админке
-	 *
-	 * @param array $language_files
-	 * @param array $include_files
-	 * @param array $settings_search
-	 * @return void
-	 */
-	public function adminSearch(&$language_files, &$include_files, &$settings_search)
+	public function adminSearch(array &$language_files, array &$include_files, array &$settings_search)
 	{
-		$settings_search[] = array(array($this, 'settings'), 'area=modsettings;sa=fancybox');
+		$settings_search[] = [[$this, 'settings'], 'area=modsettings;sa=fancybox'];
 	}
 
-	/**
-	 * Подключаем настройки мода
-	 *
-	 * @param array $subActions
-	 * @return void
-	 */
-	public function modifyModifications(&$subActions)
+	public function modifyModifications(array &$subActions)
 	{
-		$subActions['fancybox'] = array($this, 'settings');
+		$subActions['fancybox'] = [$this, 'settings'];
 	}
 
 	/**
-	 * Обрабатываем настройки мода
-	 *
-	 * @param boolean $return_config
 	 * @return array|void
 	 */
-	public function settings($return_config = false)
+	public function settings(bool $return_config = false)
 	{
 		global $context, $txt, $scripturl, $modSettings;
 
 		$context['page_title'] = $context['settings_title'] = $txt['fancybox_settings'];
 		$context['post_url'] = $scripturl . '?action=admin;area=modsettings;save;sa=fancybox';
-		$context[$context['admin_menu_name']]['tab_data']['tabs']['fancybox'] = array('description' => $txt['fancybox_desc']);
+		$context[$context['admin_menu_name']]['tab_data']['tabs']['fancybox'] = ['description' => $txt['fancybox_desc']];
 
-		$add_settings = [];
-		if (!isset($modSettings['fancybox_animation_effect']))
-			$add_settings['fancybox_animation_effect'] = 'zoom';
-		if (!isset($modSettings['fancybox_animation_speed']))
-			$add_settings['fancybox_animation_speed'] = 366;
-		if (!isset($modSettings['fancybox_transition_effect']))
-			$add_settings['fancybox_transition_effect'] = 'fade';
-		if (!isset($modSettings['fancybox_transition_speed']))
-			$add_settings['fancybox_transition_speed'] = 366;
-		if (!isset($modSettings['fancybox_slideshow_speed']))
-			$add_settings['fancybox_slideshow_speed'] = 4000;
-		if (!isset($modSettings['fancybox_thumbnails']))
-			$add_settings['fancybox_thumbnails'] = true;
-		if (!empty($add_settings))
-			updateSettings($add_settings);
+		$txt['fancybox_show_thumb_for_img_subtext'] = sprintf($txt['fancybox_show_thumb_for_img_subtext'], $scripturl . '?action=admin;area=manageattachments;sa=attachments#attachmentThumbWidth');
 
-		$config_vars = array(
-			array('check', 'fancybox_image_preload'),
-			array('select', 'fancybox_animation_effect', $txt['fancybox_animation_effect_set']),
-			array('int', 'fancybox_animation_speed'),
-			array('select', 'fancybox_transition_effect', $txt['fancybox_transition_effect_set']),
-			array('int', 'fancybox_transition_speed'),
-			array('check', 'fancybox_autoplay'),
-			array('int', 'fancybox_slideshow_speed'),
-			array('check', 'fancybox_show_link'),
-			array('check', 'fancybox_thumbnails'),
-			array('check', 'fancybox_prepare_img'),
-			array('check', 'fancybox_save_url_img', 'disabled' => empty($modSettings['fancybox_prepare_img'])),
-			array('check', 'fancybox_prepare_attach'),
-			array('check', 'fancybox_show_thumb_for_attach', 'subtext' => $txt['fancybox_show_thumb_for_attach_subtext'], 'disabled' => empty($modSettings['fancybox_prepare_attach'])),
-			array('check', 'fancybox_traffic', 'disabled' => empty($modSettings['fancybox_prepare_img']) && empty($modSettings['fancybox_prepare_attach']) ? 'disabled' : '')
-		);
+		$config_vars = [
+			['check', 'fancybox_show_download_link'],
+			['check', 'fancybox_thumbnails'],
+			['check', 'fancybox_prepare_img'],
+			['check', 'fancybox_show_thumb_for_img', 'subtext' => $txt['fancybox_show_thumb_for_img_subtext'], 'disabled' => empty($modSettings['fancybox_prepare_img'])],
+			['check', 'fancybox_save_url_img', 'disabled' => empty($modSettings['fancybox_prepare_img'])],
+			['check', 'fancybox_prepare_attach'],
+			['check', 'fancybox_show_thumb_for_attach', 'subtext' => $txt['fancybox_show_thumb_for_attach_subtext'], 'disabled' => empty($modSettings['fancybox_prepare_attach'])],
+			['check', 'fancybox_traffic', 'disabled' => empty($modSettings['fancybox_prepare_img']) && empty($modSettings['fancybox_prepare_attach']) ? 'disabled' : ''],
+		];
 
 		if ($return_config)
 			return $config_vars;
@@ -292,14 +207,19 @@ class FancyBox
 		prepareDBSettingContext($config_vars);
 	}
 
-	/**
-	 * @param string $tag
-	 * @return bool
-	 */
-	private function isItShouldNotWork($tag = 'img')
+	private function shouldItWork(string $tag = 'img'): bool
 	{
 		global $modSettings, $context;
 
-		return SMF === 'BACKGROUND' || SMF === 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare_' . $tag]) || in_array($context['current_action'], array('helpadmin', 'printpage')) || $context['current_subaction'] === 'showoperations' || (!empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])));
+		if (SMF === 'BACKGROUND' || SMF === 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare_' . $tag]))
+			return false;
+
+		if (!empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])))
+			return false;
+
+		if (in_array($context['current_action'], ['helpadmin', 'printpage']) || $context['current_subaction'] === 'showoperations')
+			return false;
+
+		return true;
 	}
 }
