@@ -9,7 +9,7 @@
  * @copyright 2012-2022 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.1
+ * @version 1.1.1
  */
 
 if (!defined('SMF'))
@@ -19,6 +19,7 @@ final class FancyBox
 {
 	public function hooks()
 	{
+		add_integration_function('integrate_pre_css_output', __CLASS__ . '::preCssOutput#', false, __FILE__);
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
 		add_integration_function('integrate_bbc_codes', __CLASS__ . '::bbcCodes#', false, __FILE__);
 		add_integration_function('integrate_attach_bbc_validate', __CLASS__ . '::attachBbcValidate#', false, __FILE__);
@@ -27,18 +28,30 @@ final class FancyBox
 		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
 	}
 
+	/**
+	 * @hook integrate_pre_css_output
+	 */
+	public function preCssOutput()
+	{
+		if (! $this->shouldItWork())
+			return;
+
+		echo "\n\t" . '<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">';
+	}
+
+
 	public function loadTheme()
 	{
 		global $context, $modSettings, $txt;
 
 		loadLanguage('FancyBox/');
 
-		if (SMF === 'BACKGROUND' || SMF === 'SSI' || in_array($context['current_action'], ['helpadmin', 'printpage']))
+		if (! $this->shouldItWork())
 			return;
 
 		loadCSSFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css', ['external' => true]);
 
-		loadJavaScriptFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js', ['external' => true]);
+		loadJavaScriptFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js', ['external' => true, 'defer' => true]);
 
 		addInlineJavaScript('
 		Fancybox.bind("[data-fancybox]", {
@@ -129,7 +142,7 @@ final class FancyBox
 		unset($code);
 	}
 
-	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, array $disabled, array $params)
+	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, ?array $disabled, array $params)
 	{
 		global $smcFunc, $modSettings, $user_info, $settings, $txt;
 
@@ -181,7 +194,9 @@ final class FancyBox
 		$context['post_url'] = $scripturl . '?action=admin;area=modsettings;save;sa=fancybox';
 		$context[$context['admin_menu_name']]['tab_data']['tabs']['fancybox'] = ['description' => $txt['fancybox_desc']];
 
-		$txt['fancybox_show_thumb_for_img_subtext'] = sprintf($txt['fancybox_show_thumb_for_img_subtext'], $scripturl . '?action=admin;area=manageattachments;sa=attachments#attachmentThumbWidth');
+		$txt['fancybox_show_thumb_for_img_subtext'] = sprintf(
+			$txt['fancybox_show_thumb_for_img_subtext'], $scripturl . '?action=admin;area=manageattachments;sa=attachments#attachmentThumbWidth'
+		);
 
 		$config_vars = [
 			['check', 'fancybox_show_download_link'],
