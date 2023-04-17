@@ -2,8 +2,9 @@
 [![SMF 2.1](https://img.shields.io/badge/SMF-2.1-ed6033.svg?style=flat)](https://github.com/SimpleMachines/SMF2.1)
 ![License](https://img.shields.io/github/license/dragomano/fancybox-4-smf)
 ![Hooks only: Yes](https://img.shields.io/badge/Hooks%20only-YES-blue)
+[![Crowdin](https://badges.crowdin.net/fancybox-4-smf/localized.svg)](https://crowdin.com/project/fancybox-4-smf)
 
-* **Tested on:** PHP 7.4.27
+* **Tested on:** PHP 8.0.24
 * **Languages:** English, Russian
 
 ## Description
