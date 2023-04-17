@@ -1,0 +1,6 @@
+**/.idea/
+**/.vscode/
+**/vendor/
+Themes/default/languages/FancyBox/*
+!Themes/default/languages/FancyBox/index.php
+!Themes/default/languages/FancyBox/.english.php
