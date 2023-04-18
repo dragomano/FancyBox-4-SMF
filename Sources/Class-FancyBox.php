@@ -151,7 +151,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_attach_bbc_validate
 	 */
-	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, array $disabled = [], array $params = [])
+	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, ?array $disabled, array $params)
 	{
 		global $smcFunc, $modSettings, $settings, $txt;
 
