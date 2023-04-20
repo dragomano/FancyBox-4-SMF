@@ -5,10 +5,10 @@
 [![Crowdin](https://badges.crowdin.net/fancybox-4-smf/localized.svg)](https://crowdin.com/project/fancybox-4-smf)
 
 * **Tested on:** PHP 8.0.24
-* **Languages:** English, Russian
+* **Languages:** English, Russian, Italian, Spanish
 
 ## Description
-This modification adds a [fancyBox](https://fancyapps.com/docs/ui/fancybox/) on your SMF forum.
+This modification adds a [fancyBox](https://fancyapps.com/fancybox/) on your SMF forum.
 
 ![](https://user-images.githubusercontent.com/229402/153417429-6788f2e1-1846-4560-9b5e-e1d2b3e9edab.png)
 
