@@ -9,7 +9,7 @@
  * @copyright 2012-2023 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.2
+ * @version 1.2.3
  */
 
 if (!defined('SMF'))
@@ -105,11 +105,13 @@ final class FancyBox
 		linkImages && linkImages.forEach(function (item) {
 			if (! item.textContent) {
 				let imgLink = item.nextElementSibling;
-				imgLink.classList.add("bbc_link");
-				imgLink.removeAttribute("data-fancybox");
-				imgLink.setAttribute("href", item.getAttribute("href"));
-				imgLink.setAttribute("target", "_blank");
-				item.parentNode.removeChild(item);
+				if (imgLink) {
+					imgLink.classList.add("bbc_link");
+					imgLink.removeAttribute("data-fancybox");
+					imgLink.setAttribute("href", item.getAttribute("href"));
+					imgLink.setAttribute("target", "_blank");
+					item.parentNode.removeChild(item);
+				}
 			}
 		});', true);
 		}
@@ -128,20 +130,32 @@ final class FancyBox
 		foreach ($codes as &$code) {
 			if ($code['tag'] === 'img') {
 				$code['validate'] = function($tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
-					$url = iri_to_url(strtr($data, array('<br>' => '')));
+					$url = iri_to_url(strtr(trim($data), array('<br>' => '', ' ' => '%20')));
 					$url = parse_iri($url, PHP_URL_SCHEME) === null ? '//' . ltrim($url, ':/') : get_proxied_url($url);
 
 					if (!empty($modSettings['fancybox_show_thumb_for_img']) && empty($params['{width}']) && !empty($modSettings['attachmentThumbWidth'])) {
 						$params['{width}'] = ' width="' . $modSettings['attachmentThumbWidth'] . '"';
 					}
 
-					$alt = !empty($params['{alt}']) || $this->showGuestImage() ? ($this->showGuestImage() ? 'traffic.gif' : $params['{alt}']) : '';
-					$title = !empty($params['{title}']) || $this->showGuestImage() ? ' title="' . ($this->showGuestImage() ? $txt['fancy_click'] : $params['{title}']) . '"' : '';
-					$caption = ' data-caption="' . (!empty($params['{title}']) ? $params['{title}'] : (!empty($params['{alt}']) ? $params['{alt}'] : '')) . '"';
+					$title = empty($params['{title}']) ? '' : $params['{title}'];
+					$alt = empty($params['{alt}']) ? '' : $params['{alt}'];
+					$src = $url;
 
-					$preview_url = '<a data-src="' . $url . '" data-fancybox="topic"' . $caption . '><img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . ($this->showGuestImage() ? $settings['default_images_url'] . '/traffic.gif' : $url) . '"' . $title . $params['{width}'] . $params['{height}'] . '></a>';
-					$data = isset($disabled[$tag['tag']]) ? $url : $preview_url;
+					if ($this->showGuestImage()) {
+						$title = ' title="' . $txt['fancy_click'] . '"';
+						$alt = 'traffic.gif';
+						$src = $settings['default_images_url'] . '/traffic.gif';
+					}
+
+					$caption = ' data-caption="' . (empty($title) ? $alt : $title) . '"';
+
+					$link = '<a data-fancybox="topic" data-src="' . $url . '" data-thumb="' . $url . '"' . $caption . '>%s</a>';
+					$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '"' . $title . $params['{width}'] . $params['{height}'] . '>';
+
+					$data = isset($disabled[$tag['tag']]) ? $url : sprintf($link, $img);
 				};
+
+				break;
 			}
 		}
 
@@ -160,27 +174,32 @@ final class FancyBox
 
 		if ($params['{display}'] === 'embed') {
 			$alt = empty($params['{alt}']) ? $currentAttachment['name'] : $params['{alt}'];
-			$caption = ' data-caption="' . (!empty($params['{alt}']) ? $params['{alt}'] : $currentAttachment['name']) . '"';
-			$title = !empty($data) ? ' title="' . $smcFunc['htmlspecialchars']($data) . '"' : '';
+			$title = empty($data) ? '' : (' title="' . $smcFunc['htmlspecialchars']($data) . '"');
+			$caption = ' data-caption="' . $alt . '"';
 
 			if (!empty($currentAttachment['is_image']) && !empty($currentAttachment['href'])) {
-				$loading_img = $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"';
-				$width = empty($params['{width}']) ? '' : ' width="' . $params['{width}'] . '"';
+				$width  = empty($params['{width}'])  ? '' : ' width="' . $params['{width}'] . '"';
 				$height = empty($params['{height}']) ? '' : ' height="' . $params['{height}'] . '"';
 
-				if (empty($width) && empty($height)) {
-					$src = ($this->showGuestImage() ? $loading_img : (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : $currentAttachment['thumbnail']['href']) . '"' . $title);
+				if ($this->showGuestImage()) {
+					$src = $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"';
+				} elseif (empty($width) && empty($height)) {
+					$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href'])) . '"' . $title;
 				} else {
-					$src = ($this->showGuestImage() ? $loading_img : $currentAttachment['href'] . ';image"' . $title . $width . $height);
+					$src = $currentAttachment['href'] . ';image"' . $title . $width . $height;
 				}
 
-				$link = '<a data-fancybox="topic" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>%s</a>';
-				$img = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
+				$link = '<a data-fancybox="topic" data-thumb="' . ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href']) . '" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>%s</a>';
+				$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
+
 				$returnContext = sprintf($link, $img);
 			}
 		}
 	}
 
+	/**
+	 * @hook integrate_admin_areas
+	 */
 	public function adminAreas(array &$admin_areas)
 	{
 		global $txt;
@@ -188,11 +207,17 @@ final class FancyBox
 		$admin_areas['config']['areas']['modsettings']['subsections']['fancybox'] = [$txt['fancybox_settings']];
 	}
 
+	/**
+	 * @hook integrate_admin_search
+	 */
 	public function adminSearch(array &$language_files, array &$include_files, array &$settings_search)
 	{
 		$settings_search[] = [[$this, 'settings'], 'area=modsettings;sa=fancybox'];
 	}
 
+	/**
+	 * @hook integrate_modify_modifications
+	 */
 	public function modifyModifications(array &$subActions)
 	{
 		$subActions['fancybox'] = [$this, 'settings'];
