@@ -149,10 +149,10 @@ final class FancyBox
 
 					$caption = ' data-caption="' . (empty($title) ? $alt : $title) . '"';
 
-					$link = '<a data-fancybox="topic" data-src="' . $url . '" data-thumb="' . $url . '"' . $caption . '>%s</a>';
+					$link = '<a data-fancybox="topic" data-src="' . $url . '" data-thumb="' . $url . '"' . $caption . '>{img}</a>';
 					$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '"' . $title . $params['{width}'] . $params['{height}'] . '>';
 
-					$data = isset($disabled[$tag['tag']]) ? $url : sprintf($link, $img);
+					$data = isset($disabled[$tag['tag']]) ? $url : str_replace('{img}', $img, $link);
 				};
 
 				break;
