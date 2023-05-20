@@ -9,7 +9,7 @@
  * @copyright 2012-2023 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.2.3
+ * @version 1.2.4
  */
 
 if (!defined('SMF'))
@@ -177,7 +177,7 @@ final class FancyBox
 			$title = empty($data) ? '' : (' title="' . $smcFunc['htmlspecialchars']($data) . '"');
 			$caption = ' data-caption="' . $alt . '"';
 
-			if (!empty($currentAttachment['is_image']) && !empty($currentAttachment['href'])) {
+			if (!empty($currentAttachment['is_image']) && !empty($currentAttachment['href']) && !empty($currentAttachment['thumbnail']['has_thumb'])) {
 				$width  = empty($params['{width}'])  ? '' : ' width="' . $params['{width}'] . '"';
 				$height = empty($params['{height}']) ? '' : ' height="' . $params['{height}'] . '"';
 
@@ -189,10 +189,10 @@ final class FancyBox
 					$src = $currentAttachment['href'] . ';image"' . $title . $width . $height;
 				}
 
-				$link = '<a data-fancybox="topic" data-thumb="' . ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href']) . '" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>%s</a>';
+				$link = '<a data-fancybox="topic" data-thumb="' . ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href']) . '" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>{img}</a>';
 				$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
 
-				$returnContext = sprintf($link, $img);
+				$returnContext = str_replace('{img}', $img, $link);
 			}
 		}
 	}
