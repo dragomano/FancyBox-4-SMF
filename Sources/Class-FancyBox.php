@@ -6,10 +6,10 @@
  * @package FancyBox 4 SMF
  * @link https://custom.simplemachines.org/mods/index.php?mod=3303
  * @author Bugo https://dragomano.ru/mods/fancybox-4-smf
- * @copyright 2012-2023 Bugo
+ * @copyright 2012-2024 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.2.4
+ * @version 1.2.5
  */
 
 if (!defined('SMF'))
@@ -17,7 +17,7 @@ if (!defined('SMF'))
 
 final class FancyBox
 {
-	public function hooks()
+	public function hooks(): void
 	{
 		add_integration_function('integrate_pre_css_output', __CLASS__ . '::preCssOutput#', false, __FILE__);
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
@@ -31,7 +31,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_pre_css_output
 	 */
-	public function preCssOutput()
+	public function preCssOutput(): void
 	{
 		global $modSettings;
 
@@ -44,7 +44,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_load_theme
 	 */
-	public function loadTheme()
+	public function loadTheme(): void
 	{
 		global $modSettings, $txt;
 
@@ -124,7 +124,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_bbc_codes
 	 */
-	public function bbcCodes(array &$codes)
+	public function bbcCodes(array &$codes): void
 	{
 		global $modSettings, $user_info, $txt, $settings;
 
@@ -169,7 +169,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_attach_bbc_validate
 	 */
-	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, ?array $disabled, array $params)
+	public function attachBbcValidate(string &$returnContext, array $currentAttachment, array $tag, string $data, ?array $disabled, array $params): void
 	{
 		global $smcFunc, $modSettings, $settings, $txt;
 
@@ -204,7 +204,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_admin_areas
 	 */
-	public function adminAreas(array &$admin_areas)
+	public function adminAreas(array &$admin_areas): void
 	{
 		global $txt;
 
@@ -214,7 +214,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_admin_search
 	 */
-	public function adminSearch(array &$language_files, array &$include_files, array &$settings_search)
+	public function adminSearch(array &$language_files, array &$include_files, array &$settings_search): void
 	{
 		$settings_search[] = [[$this, 'settings'], 'area=modsettings;sa=fancybox'];
 	}
@@ -222,7 +222,7 @@ final class FancyBox
 	/**
 	 * @hook integrate_modify_modifications
 	 */
-	public function modifyModifications(array &$subActions)
+	public function modifyModifications(array &$subActions): void
 	{
 		$subActions['fancybox'] = [$this, 'settings'];
 	}
