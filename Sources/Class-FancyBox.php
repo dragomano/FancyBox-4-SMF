@@ -93,27 +93,31 @@ final class FancyBox
 				DOWNLOAD: "' . $txt['fancy_download'] . '"
 			}
 		});' . (empty($modSettings['fancybox_prepare_attachments']) ? '' : '
-		let attachments = document.querySelectorAll(".attachments_top a");
-		attachments && attachments.forEach(function (item) {
-			item.removeAttribute("onclick");
-			item.setAttribute("data-fancybox", "topic");
-		});'), true);
+		if (typeof attachments === "undefined") {
+			let attachments = document.querySelectorAll(".attachments_top a");
+			attachments && attachments.forEach(function (item) {
+				item.removeAttribute("onclick");
+				item.setAttribute("data-fancybox", "topic");
+			});
+		}'), true);
 
 		if (!empty($modSettings['fancybox_prepare_img']) && !empty($modSettings['fancybox_save_url_img'])) {
 			addInlineJavaScript('
-		let linkImages = document.querySelectorAll("a.bbc_link");
-		linkImages && linkImages.forEach(function (item) {
-			if (! item.textContent) {
-				let imgLink = item.nextElementSibling;
-				if (imgLink) {
-					imgLink.classList.add("bbc_link");
-					imgLink.removeAttribute("data-fancybox");
-					imgLink.setAttribute("href", item.getAttribute("href"));
-					imgLink.setAttribute("target", "_blank");
-					item.parentNode.removeChild(item);
+		if (typeof linkImages === "undefined") {
+			let linkImages = document.querySelectorAll("a.bbc_link");
+			linkImages && linkImages.forEach(function (item) {
+				if (! item.textContent) {
+					let imgLink = item.nextElementSibling;
+					if (imgLink) {
+						imgLink.classList.add("bbc_link");
+						imgLink.removeAttribute("data-fancybox");
+						imgLink.setAttribute("href", item.getAttribute("href"));
+						imgLink.setAttribute("target", "_blank");
+						item.parentNode.removeChild(item);
+					}
 				}
-			}
-		});', true);
+			});
+		}', true);
 		}
 	}
 
