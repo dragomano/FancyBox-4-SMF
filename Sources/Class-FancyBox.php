@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 /**
  * Class-FancyBox.php
@@ -6,10 +6,10 @@
  * @package FancyBox 4 SMF
  * @link https://custom.simplemachines.org/mods/index.php?mod=3303
  * @author Bugo https://dragomano.ru/mods/fancybox-4-smf
- * @copyright 2012-2024 Bugo
+ * @copyright 2012-2025 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.2.5
+ * @version 1.3
  */
 
 if (!defined('SMF'))
@@ -33,9 +33,7 @@ final class FancyBox
 	 */
 	public function preCssOutput(): void
 	{
-		global $modSettings;
-
-		if ($this->shouldItWork() === false && $this->shouldItWork('attach') === false && empty($modSettings['fancybox_prepare_attachments']))
+		if ($this->isDisable())
 			return;
 
 		echo "\n\t" . '<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">';
@@ -50,7 +48,7 @@ final class FancyBox
 
 		loadLanguage('FancyBox/');
 
-		if ($this->shouldItWork() === false && $this->shouldItWork('attach') === false && empty($modSettings['fancybox_prepare_attachments']))
+		if ($this->isDisable())
 			return;
 
 		loadCSSFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css', ['external' => true]);
@@ -92,33 +90,11 @@ final class FancyBox
 				TOGGLE_FULLSCREEN: "' . $txt['fancy_toggle_fullscreen'] . '",
 				DOWNLOAD: "' . $txt['fancy_download'] . '"
 			}
-		});' . (empty($modSettings['fancybox_prepare_attachments']) ? '' : '
-		if (typeof attachments === "undefined") {
-			let attachments = document.querySelectorAll(".attachments_top a");
-			attachments && attachments.forEach(function (item) {
-				item.removeAttribute("onclick");
-				item.setAttribute("data-fancybox", "topic");
-			});
-		}'), true);
+		});', true);
 
-		if (!empty($modSettings['fancybox_prepare_img']) && !empty($modSettings['fancybox_save_url_img'])) {
-			addInlineJavaScript('
-		if (typeof linkImages === "undefined") {
-			let linkImages = document.querySelectorAll("a.bbc_link");
-			linkImages && linkImages.forEach(function (item) {
-				if (! item.textContent) {
-					let imgLink = item.nextElementSibling;
-					if (imgLink) {
-						imgLink.classList.add("bbc_link");
-						imgLink.removeAttribute("data-fancybox");
-						imgLink.setAttribute("href", item.getAttribute("href"));
-						imgLink.setAttribute("target", "_blank");
-						item.parentNode.removeChild(item);
-					}
-				}
-			});
-		}', true);
-		}
+		$this->prepareAttachments();
+
+		$this->prepareImages();
 	}
 
 	/**
@@ -133,11 +109,11 @@ final class FancyBox
 
 		foreach ($codes as &$code) {
 			if ($code['tag'] === 'img') {
-				$code['validate'] = function($tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
+				$code['validate'] = function ($tag, &$data, $disabled, $params) use ($modSettings, $user_info, $txt, $settings) {
 					$url = iri_to_url(strtr(trim($data), array('<br>' => '', ' ' => '%20')));
 					$url = parse_iri($url, PHP_URL_SCHEME) === null ? '//' . ltrim($url, ':/') : get_proxied_url($url);
 
-					if (!empty($modSettings['fancybox_show_thumb_for_img']) && empty($params['{width}']) && !empty($modSettings['attachmentThumbWidth'])) {
+					if (! empty($modSettings['fancybox_show_thumb_for_img']) && empty($params['{width}']) && ! empty($modSettings['attachmentThumbWidth'])) {
 						$params['{width}'] = ' width="' . $modSettings['attachmentThumbWidth'] . '"';
 					}
 
@@ -173,32 +149,38 @@ final class FancyBox
 	{
 		global $smcFunc, $modSettings, $settings, $txt;
 
-		if ($this->shouldItWork('attach') === false)
+		if ($this->shouldItWork('attach') === false || $params['{display}'] !== 'embed')
 			return;
 
-		if ($params['{display}'] === 'embed') {
-			$alt = empty($params['{alt}']) ? $currentAttachment['name'] : $params['{alt}'];
-			$title = empty($data) ? '' : (' title="' . $smcFunc['htmlspecialchars']($data) . '"');
-			$caption = ' data-caption="' . $alt . '"';
+		$alt = empty($params['{alt}']) ? $currentAttachment['name'] : $params['{alt}'];
+		$title = empty($data) ? '' : (' title="' . $smcFunc['htmlspecialchars']($data) . '"');
+		$caption = ' data-caption="' . $alt . '"';
 
-			if (!empty($currentAttachment['is_image']) && !empty($currentAttachment['href']) && !empty($currentAttachment['thumbnail']['has_thumb'])) {
-				$width  = empty($params['{width}'])  ? '' : ' width="' . $params['{width}'] . '"';
-				$height = empty($params['{height}']) ? '' : ' height="' . $params['{height}'] . '"';
+		if (
+			empty($currentAttachment['is_image'])
+			|| empty($currentAttachment['href'])
+			|| empty($currentAttachment['thumbnail']['has_thumb'])
+		)
+			return;
 
-				if ($this->showGuestImage()) {
-					$src = $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"';
-				} elseif (empty($width) && empty($height)) {
-					$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href'])) . '"' . $title;
-				} else {
-					$src = $currentAttachment['href'] . ';image"' . $title . $width . $height;
-				}
+		$width  = empty($params['{width}'])  ? '' : ' width="' . $params['{width}'] . '"';
+		$height = empty($params['{height}']) ? '' : ' height="' . $params['{height}'] . '"';
 
-				$link = '<a data-fancybox="topic" data-thumb="' . ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href']) . '" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>{img}</a>';
-				$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
-
-				$returnContext = str_replace('{img}', $img, $link);
-			}
+		switch (true) {
+			case $this->showGuestImage():
+				$src = $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"';
+				break;
+			case empty($width) && empty($height):
+				$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href'])) . '"' . $title;
+				break;
+			default:
+				$src = $currentAttachment['href'] . ';image"' . $title . $width . $height;
 		}
+
+		$link = '<a data-fancybox="topic" data-thumb="' . ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href']) . '" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>{img}</a>';
+		$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
+
+		$returnContext = str_replace('{img}', $img, $link);
 	}
 
 	/**
@@ -243,17 +225,38 @@ final class FancyBox
 
 		$config_vars = [
 			['check', 'fancybox_prepare_img'],
-			['check', 'fancybox_show_thumb_for_img', 'subtext' => $txt['fancybox_show_thumb_for_img_subtext'], 'disabled' => empty($modSettings['fancybox_prepare_img'])],
-			['check', 'fancybox_save_url_img', 'disabled' => empty($modSettings['fancybox_prepare_img'])],
+			['check', 'fancybox_show_thumb_for_img', 'subtext' => $txt['fancybox_show_thumb_for_img_subtext']],
+			['check', 'fancybox_save_url_img'],
 			'',
 			['check', 'fancybox_prepare_attach'],
-			['check', 'fancybox_show_thumb_for_attach', 'subtext' => $txt['fancybox_show_thumb_for_attach_subtext'], 'disabled' => empty($modSettings['fancybox_prepare_attach'])],
+			['check', 'fancybox_show_thumb_for_attach', 'subtext' => $txt['fancybox_show_thumb_for_attach_subtext']],
 			'',
 			['check', 'fancybox_prepare_attachments'],
 			['check', 'fancybox_show_download_link'],
 			['check', 'fancybox_thumbnails'],
-			['check', 'fancybox_traffic', 'disabled' => empty($modSettings['fancybox_prepare_img']) && empty($modSettings['fancybox_prepare_attach']) ? 'disabled' : ''],
+			['check', 'fancybox_traffic'],
 		];
+
+		$context['settings_post_javascript'] = '
+		$(document).ready(function() {
+			$("#fancybox_prepare_img").change();
+			$("#fancybox_prepare_attach").change();
+		});
+		$("#fancybox_prepare_img").change(function (e) {
+			let prepareImg = e.currentTarget.checked;
+			let prepareAttach = $("#fancybox_prepare_attach").is(":checked");
+			
+			$("#fancybox_show_thumb_for_img").prop("disabled", !prepareImg);
+			$("#fancybox_save_url_img").prop("disabled", !prepareImg);
+			$("#fancybox_traffic").prop("disabled", !prepareImg && !prepareAttach);
+		});
+		$("#fancybox_prepare_attach").change(function (e) {
+			let prepareAttach = e.currentTarget.checked;
+			let prepareImg = $("#fancybox_prepare_img").is(":checked");
+			
+			$("#fancybox_show_thumb_for_attach").prop("disabled", !prepareAttach);
+			$("#fancybox_traffic").prop("disabled", !prepareImg && !prepareAttach);
+		});';
 
 		if ($return_config)
 			return $config_vars;
@@ -270,26 +273,91 @@ final class FancyBox
 		prepareDBSettingContext($config_vars);
 	}
 
+	private function prepareAttachments(): void
+	{
+		global $modSettings;
+
+		if (empty($modSettings['fancybox_prepare_attachments']))
+			return;
+
+		if (empty($modSettings['attachmentShowImages'])) {
+			addInlineJavaScript('
+		if (typeof attachments === "undefined") {
+			let attachments = document.querySelectorAll(".attachments_bot a");
+			attachments && attachments.forEach(function (item) {
+				item.setAttribute("data-fancybox", "topic");
+			});
+		}', true);
+		} else {
+			addInlineJavaScript('
+		if (typeof attachments === "undefined") {
+			let attachments = document.querySelectorAll(".attachments_top a");
+			attachments && attachments.forEach(function (item) {
+				item.removeAttribute("onclick");
+				item.setAttribute("data-fancybox", "topic");
+			});
+		}', true);
+		}
+	}
+
+	private function prepareImages(): void
+	{
+		global $modSettings;
+
+		if (empty($modSettings['fancybox_prepare_img']) || empty($modSettings['fancybox_save_url_img']))
+			return;
+
+		addInlineJavaScript('
+		if (typeof linkImages === "undefined") {
+			let linkImages = document.querySelectorAll("a.bbc_link");
+			linkImages && linkImages.forEach(function (item) {
+				if (! item.textContent) {
+					let imgLink = item.nextElementSibling;
+					if (imgLink) {
+						imgLink.classList.add("bbc_link");
+						imgLink.removeAttribute("data-fancybox");
+						imgLink.setAttribute("href", item.getAttribute("href"));
+						imgLink.setAttribute("target", "_blank");
+						item.parentNode.removeChild(item);
+					}
+				}
+			});
+		}', true);
+	}
+
 	private function showGuestImage(): bool
 	{
 		global $modSettings, $user_info;
 
-		return !empty($modSettings['fancybox_traffic']) && $user_info['is_guest'];
+		return ! empty($modSettings['fancybox_traffic']) && $user_info['is_guest'];
+	}
+
+	private function isDisable(): bool
+	{
+		global $modSettings;
+
+		return $this->shouldItWork() === false && $this->shouldItWork('attach') === false && empty($modSettings['fancybox_prepare_attachments']);
 	}
 
 	private function shouldItWork(string $tag = 'img'): bool
 	{
 		global $modSettings, $context;
 
-		if (SMF === 'BACKGROUND' || SMF === 'SSI' || empty($modSettings['enableBBC']) || empty($modSettings['fancybox_prepare_' . $tag]))
-			return false;
-
-		if (!empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])))
-			return false;
-
-		if (in_array($context['current_action'], ['helpadmin', 'printpage']) || $context['current_subaction'] === 'showoperations')
-			return false;
-
-		return true;
+		switch (true) {
+			case SMF === 'BACKGROUND' || SMF === 'SSI':
+				return false;
+			case empty($modSettings['enableBBC']):
+				return false;
+			case empty($modSettings['fancybox_prepare_' . $tag]):
+				return false;
+			case ! empty($modSettings['disabledBBC']) && in_array($tag, explode(',', $modSettings['disabledBBC'])):
+				return false;
+			case in_array($context['current_action'], ['helpadmin', 'printpage']):
+				return false;
+			case $context['current_subaction'] === 'showoperations':
+				return false;
+			default:
+				return true;
+		}
 	}
 }
