@@ -9,10 +9,10 @@
  * @copyright 2012-2025 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.3
+ * @version 1.3.1
  */
 
-if (!defined('SMF'))
+if (! defined('SMF'))
 	die('No direct access...');
 
 final class FancyBox
@@ -23,6 +23,7 @@ final class FancyBox
 		add_integration_function('integrate_load_theme', __CLASS__ . '::loadTheme#', false, __FILE__);
 		add_integration_function('integrate_bbc_codes', __CLASS__ . '::bbcCodes#', false, __FILE__);
 		add_integration_function('integrate_attach_bbc_validate', __CLASS__ . '::attachBbcValidate#', false, __FILE__);
+		add_integration_function('integrate_prepare_display_context', __CLASS__ . '::prepareDisplayContext#', false, __FILE__);
 		add_integration_function('integrate_admin_areas', __CLASS__ . '::adminAreas#', false, __FILE__);
 		add_integration_function('integrate_admin_search', __CLASS__ . '::adminSearch#', false, __FILE__);
 		add_integration_function('integrate_modify_modifications', __CLASS__ . '::modifyModifications#', false, __FILE__);
@@ -52,7 +53,6 @@ final class FancyBox
 			return;
 
 		loadCSSFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css', ['external' => true]);
-
 		loadJavaScriptFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js', ['external' => true, 'defer' => true]);
 
 		addInlineJavaScript('
@@ -93,7 +93,6 @@ final class FancyBox
 		});', true);
 
 		$this->prepareAttachments();
-
 		$this->prepareImages();
 	}
 
@@ -166,21 +165,42 @@ final class FancyBox
 		$width  = empty($params['{width}'])  ? '' : ' width="' . $params['{width}'] . '"';
 		$height = empty($params['{height}']) ? '' : ' height="' . $params['{height}'] . '"';
 
+		$thumbHref = $currentAttachment['thumbnail']['href'] ?? $currentAttachment['href'];
+		$imageHref = $currentAttachment['href'] . ';image"';
+
 		switch (true) {
 			case $this->showGuestImage():
 				$src = $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"';
 				break;
 			case empty($width) && empty($height):
-				$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href'])) . '"' . $title;
+				$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : $thumbHref) . '"' . $title;
 				break;
 			default:
-				$src = $currentAttachment['href'] . ';image"' . $title . $width . $height;
+				$src = $imageHref . $title . $width . $height;
 		}
 
-		$link = '<a data-fancybox="topic" data-thumb="' . ($currentAttachment['thumbnail']['href'] ?? $currentAttachment['href']) . '" data-src="' . $currentAttachment['href'] . ';image"' . $caption . '>{img}</a>';
+		$link = '<a data-fancybox="topic" data-thumb="' . $thumbHref . '" data-src="' . $imageHref . $caption . '>{img}</a>';
 		$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
 
 		$returnContext = str_replace('{img}', $img, $link);
+	}
+
+	/**
+	 * @hook integrate_prepare_display_context
+	 */
+	public function prepareDisplayContext(array &$output): void
+	{
+		global $modSettings;
+
+		if (empty($modSettings['fancybox_prepare_attachments']) || ! empty($modSettings['attachmentShowImages']))
+			return;
+
+		foreach ($output['attachment'] as $attach) {
+			if (! $attach['is_image'])
+				continue;
+
+			$output['attachment'][$attach['id']]['href'] .= '" data-fancybox="topic';
+		}
 	}
 
 	/**
@@ -277,19 +297,10 @@ final class FancyBox
 	{
 		global $modSettings;
 
-		if (empty($modSettings['fancybox_prepare_attachments']))
+		if (empty($modSettings['fancybox_prepare_attachments']) || empty($modSettings['attachmentShowImages']))
 			return;
 
-		if (empty($modSettings['attachmentShowImages'])) {
-			addInlineJavaScript('
-		if (typeof attachments === "undefined") {
-			let attachments = document.querySelectorAll(".attachments_bot a");
-			attachments && attachments.forEach(function (item) {
-				item.setAttribute("data-fancybox", "topic");
-			});
-		}', true);
-		} else {
-			addInlineJavaScript('
+		addInlineJavaScript('
 		if (typeof attachments === "undefined") {
 			let attachments = document.querySelectorAll(".attachments_top a");
 			attachments && attachments.forEach(function (item) {
@@ -297,7 +308,6 @@ final class FancyBox
 				item.setAttribute("data-fancybox", "topic");
 			});
 		}', true);
-		}
 	}
 
 	private function prepareImages(): void
@@ -336,7 +346,9 @@ final class FancyBox
 	{
 		global $modSettings;
 
-		return $this->shouldItWork() === false && $this->shouldItWork('attach') === false && empty($modSettings['fancybox_prepare_attachments']);
+		return $this->shouldItWork() === false
+			&& $this->shouldItWork('attach') === false
+			&& empty($modSettings['fancybox_prepare_attachments']);
 	}
 
 	private function shouldItWork(string $tag = 'img'): bool
