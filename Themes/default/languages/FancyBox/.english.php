@@ -1,8 +1,6 @@
 <?php
 
 /**
- * .english language file
- *
  * @package FancyBox 4 SMF
  * @author Bugo https://dragomano.ru/mods/fancybox-4-smf
  */
