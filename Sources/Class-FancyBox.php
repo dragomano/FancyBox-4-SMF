@@ -9,7 +9,7 @@
  * @copyright 2012-2025 Bugo
  * @license https://opensource.org/licenses/gpl-3.0.html GNU GPLv3
  *
- * @version 1.3.1
+ * @version 1.4
  */
 
 if (! defined('SMF'))
@@ -52,8 +52,19 @@ final class FancyBox
 		if ($this->isDisable())
 			return;
 
-		loadCSSFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css', ['external' => true]);
-		loadJavaScriptFile('https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js', ['external' => true, 'defer' => true]);
+		loadCSSFile(
+			'https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.css',
+			[
+				'external' => true
+			]
+		);
+		loadJavaScriptFile(
+			'https://cdn.jsdelivr.net/npm/@fancyapps/ui@4/dist/fancybox.umd.js',
+			[
+				'external' => true,
+				'defer' => true
+			]
+		);
 
 		addInlineJavaScript('
 		Fancybox.bind("[data-fancybox]", {
@@ -129,7 +140,11 @@ final class FancyBox
 					$caption = ' data-caption="' . (empty($title) ? $alt : $title) . '"';
 
 					$link = '<a data-fancybox="topic" data-src="' . $url . '" data-thumb="' . $url . '"' . $caption . '>{img}</a>';
-					$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '"' . $title . $params['{width}'] . $params['{height}'] . '>';
+					$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '"' . $params['{width}'] . $params['{height}'] . '>';
+
+					if (! empty($title)) {
+						$img  = '<figure>' . $img . '<figcaption>' . $title . '</figcaption></figure>';
+					}
 
 					$data = isset($disabled[$tag['tag']]) ? $url : str_replace('{img}', $img, $link);
 				};
@@ -152,7 +167,7 @@ final class FancyBox
 			return;
 
 		$alt = empty($params['{alt}']) ? $currentAttachment['name'] : $params['{alt}'];
-		$title = empty($data) ? '' : (' title="' . $smcFunc['htmlspecialchars']($data) . '"');
+		$title = empty($alt) ? $smcFunc['htmlspecialchars']($data) : $alt;
 		$caption = ' data-caption="' . $alt . '"';
 
 		if (
@@ -173,14 +188,18 @@ final class FancyBox
 				$src = $settings['default_images_url'] . '/traffic.gif" title="' . $txt['fancy_click'] . '"';
 				break;
 			case empty($width) && empty($height):
-				$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : $thumbHref) . '"' . $title;
+				$src = (empty($modSettings['fancybox_show_thumb_for_attach']) ? $currentAttachment['href'] : $thumbHref) . '"';
 				break;
 			default:
-				$src = $imageHref . $title . $width . $height;
+				$src = $imageHref . $width . $height;
 		}
 
 		$link = '<a data-fancybox="topic" data-thumb="' . $thumbHref . '" data-src="' . $imageHref . $caption . '>{img}</a>';
 		$img  = '<img alt="' . $alt . '" class="bbc_img" loading="lazy" src="' . $src . '>';
+
+		if (! empty($title)) {
+			$img  = '<figure>' . $img . '<figcaption>' . $title . '</figcaption></figure>';
+		}
 
 		$returnContext = str_replace('{img}', $img, $link);
 	}
@@ -265,7 +284,7 @@ final class FancyBox
 		$("#fancybox_prepare_img").change(function (e) {
 			let prepareImg = e.currentTarget.checked;
 			let prepareAttach = $("#fancybox_prepare_attach").is(":checked");
-			
+
 			$("#fancybox_show_thumb_for_img").prop("disabled", !prepareImg);
 			$("#fancybox_save_url_img").prop("disabled", !prepareImg);
 			$("#fancybox_traffic").prop("disabled", !prepareImg && !prepareAttach);
@@ -273,7 +292,7 @@ final class FancyBox
 		$("#fancybox_prepare_attach").change(function (e) {
 			let prepareAttach = e.currentTarget.checked;
 			let prepareImg = $("#fancybox_prepare_img").is(":checked");
-			
+
 			$("#fancybox_show_thumb_for_attach").prop("disabled", !prepareAttach);
 			$("#fancybox_traffic").prop("disabled", !prepareImg && !prepareAttach);
 		});';
